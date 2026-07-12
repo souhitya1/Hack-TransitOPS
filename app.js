@@ -97,7 +97,7 @@ app.get("/TransitOPS/logout", (req, res) => {
   });
 });
 
-app.get("/TransitOPS", async (req, res) => {
+app.get("/TransitOPS", requireAuth, async (req, res) => {
   try {
     const [vehicles] = await pool.query("SELECT * FROM vehicles ORDER BY created_at DESC LIMIT 5");
     const [[{ v_count }]] = await pool.query("SELECT COUNT(*) AS v_count FROM vehicles WHERE status = 'Available'");
@@ -114,8 +114,60 @@ app.get("/TransitOPS", async (req, res) => {
   }
 });
 
-// --- Vehicles ---
-app.get("/TransitOPS/vehicles", async (req, res) => {
+// --- AI Search (Gemini) ---
+app.get("/TransitOPS/search", requireAuth, async (req, res) => {
+  res.render("search/index.ejs", { question: null, answer: null, error: null });
+});
+
+app.post("/TransitOPS/search", requireAuth, async (req, res) => {
+  const { question } = req.body;
+  try {
+    // Pull a compact summary of current fleet data to give Gemini real context
+    const [[{ available_vehicles }]] = await pool.query("SELECT COUNT(*) AS available_vehicles FROM vehicles WHERE status = 'Available'");
+    const [[{ on_trip_vehicles }]] = await pool.query("SELECT COUNT(*) AS on_trip_vehicles FROM vehicles WHERE status = 'On Trip'");
+    const [[{ in_shop_vehicles }]] = await pool.query("SELECT COUNT(*) AS in_shop_vehicles FROM vehicles WHERE status = 'In Shop'");
+    const [[{ retired_vehicles }]] = await pool.query("SELECT COUNT(*) AS retired_vehicles FROM vehicles WHERE status = 'Retired'");
+
+    const [[{ available_drivers }]] = await pool.query("SELECT COUNT(*) AS available_drivers FROM drivers WHERE status = 'Available' AND license_expiry_date >= CURDATE()");
+    const [[{ on_trip_drivers }]] = await pool.query("SELECT COUNT(*) AS on_trip_drivers FROM drivers WHERE status = 'On Trip'");
+    const [[{ suspended_drivers }]] = await pool.query("SELECT COUNT(*) AS suspended_drivers FROM drivers WHERE status = 'Suspended'");
+
+    const [[{ draft_trips }]] = await pool.query("SELECT COUNT(*) AS draft_trips FROM trips WHERE status = 'Draft'");
+    const [[{ dispatched_trips }]] = await pool.query("SELECT COUNT(*) AS dispatched_trips FROM trips WHERE status = 'Dispatched'");
+    const [[{ completed_trips }]] = await pool.query("SELECT COUNT(*) AS completed_trips FROM trips WHERE status = 'Completed'");
+    const [[{ cancelled_trips }]] = await pool.query("SELECT COUNT(*) AS cancelled_trips FROM trips WHERE status = 'Cancelled'");
+
+    const fleetSummary = {
+      vehicles: { available_vehicles, on_trip_vehicles, in_shop_vehicles, retired_vehicles },
+      drivers: { available_drivers, on_trip_drivers, suspended_drivers },
+      trips: { draft_trips, dispatched_trips, completed_trips, cancelled_trips }
+    };
+
+    const prompt = `You are a fleet operations assistant for a logistics platform called TransitOps.
+Answer the user's question using ONLY the data below. Be concise (1-2 sentences), factual, and speak in plain language rather than repeating raw field names.
+If the data doesn't contain what's needed to answer, say so clearly instead of guessing.
+
+Fleet data (JSON):
+${JSON.stringify(fleetSummary)}
+
+Question: ${question}`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-flash-latest",
+      contents: prompt
+    });
+
+    const answer = result.text;
+
+    res.render("search/index.ejs", { question, answer, error: null });
+  } catch (err) {
+    console.error("AI Search Error:", err);
+    res.render("search/index.ejs", { question, answer: null, error: "Couldn't get an answer right now. Please try again." });
+  }
+});
+
+
+app.get("/TransitOPS/vehicles", requireAuth, async (req, res) => {
   try {
     const [vehicles] = await pool.query("SELECT * FROM vehicles");
     res.render("index.ejs", { vehicles });
@@ -125,11 +177,11 @@ app.get("/TransitOPS/vehicles", async (req, res) => {
   }
 });
 
-app.get("/TransitOPS/vehicles/new", (req, res) => {
+app.get("/TransitOPS/vehicles/new", requireAuth, (req, res) => {
   res.render("vehicles/new.ejs", { error: null });
 });
 
-app.post("/TransitOPS/vehicles", async (req, res) => {
+app.post("/TransitOPS/vehicles", requireAuth, async (req, res) => {
   const { registration_number, model_name, type, max_load_capacity, odometer, acquisition_cost, status, region } = req.body;
   try {
     await pool.query(
@@ -149,7 +201,7 @@ app.post("/TransitOPS/vehicles", async (req, res) => {
   }
 });
 
-app.get("/TransitOPS/vehicles/:id/edit", async (req, res) => {
+app.get("/TransitOPS/vehicles/:id/edit", requireAuth, async (req, res) => {
   let { id } = req.params;
   try {
     const [rows] = await pool.query(`SELECT * FROM vehicles WHERE id= ?`, [id]);
@@ -163,7 +215,7 @@ app.get("/TransitOPS/vehicles/:id/edit", async (req, res) => {
   }
 });
 
-app.post("/TransitOPS/vehicles/:id", async (req, res) => {
+app.post("/TransitOPS/vehicles/:id", requireAuth, async (req, res) => {
   let { id } = req.params;
   const { registration_number, model_name, type, max_load_capacity, odometer, acquisition_cost, status, region } = req.body;
   try {
@@ -187,7 +239,7 @@ app.post("/TransitOPS/vehicles/:id", async (req, res) => {
 });
 
 // --- Drivers ---
-app.get("/TransitOPS/drivers", async (req, res) => {
+app.get("/TransitOPS/drivers", requireAuth, async (req, res) => {
   try {
     const [drivers] = await pool.query(`SELECT * FROM drivers ORDER BY created_at DESC`);
     const today = new Date().toISOString().split('T')[0];
@@ -198,11 +250,11 @@ app.get("/TransitOPS/drivers", async (req, res) => {
   }
 });
 
-app.get("/TransitOPS/drivers/new", async (req, res) => {
+app.get("/TransitOPS/drivers/new", requireAuth, async (req, res) => {
   res.render("driver/new.ejs", { error: null });
 });
 
-app.post("/TransitOPS/drivers", async (req, res) => {
+app.post("/TransitOPS/drivers", requireAuth, async (req, res) => {
   const { name, license_number, license_category, license_expiry_date, contact_number, safety_score, status } = req.body;
   try {
     await pool.query(
@@ -223,7 +275,7 @@ app.post("/TransitOPS/drivers", async (req, res) => {
 });
 
 // --- Trips ---
-app.get("/TransitOPS/trips", async (req, res) => {
+app.get("/TransitOPS/trips", requireAuth, async (req, res) => {
   try {
     const query = `SELECT t.*, v.registration_number, d.name AS driver_name 
       FROM trips t
@@ -238,7 +290,7 @@ app.get("/TransitOPS/trips", async (req, res) => {
   }
 });
 
-app.get("/TransitOPS/trips/new", async (req, res) => {
+app.get("/TransitOPS/trips/new", requireAuth, async (req, res) => {
   const { error } = req.query;
   try {
     const [vehicles] = await pool.query(`SELECT id, registration_number, max_load_capacity FROM vehicles WHERE status = 'Available'`);
@@ -250,7 +302,7 @@ app.get("/TransitOPS/trips/new", async (req, res) => {
   }
 });
 
-app.post("/TransitOPS/trips", async (req, res) => {
+app.post("/TransitOPS/trips", requireAuth, async (req, res) => {
   const { source, destination, cargo_weight, planned_distance, vehicle_id, driver_id } = req.body;
   const connection = await pool.getConnection();
   try {
@@ -288,7 +340,7 @@ app.post("/TransitOPS/trips", async (req, res) => {
   }
 });
 
-app.post("/TransitOPS/trips/:id/status", async (req, res) => {
+app.post("/TransitOPS/trips/:id/status", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { action, final_odometer, fuel_consumed } = req.body;
   const connection = await pool.getConnection();
@@ -329,7 +381,7 @@ app.post("/TransitOPS/trips/:id/status", async (req, res) => {
 });
 
 // --- Maintenance ---
-app.get("/TransitOPS/maintenance", async (req, res) => {
+app.get("/TransitOPS/maintenance", requireAuth, async (req, res) => {
    try {
     const query = `SELECT m.*, v.registration_number, v.model_name 
       FROM maintenance_records m
@@ -343,7 +395,7 @@ app.get("/TransitOPS/maintenance", async (req, res) => {
   }
 });
 
-app.get("/TransitOPS/maintenance/new", async (req, res) => {
+app.get("/TransitOPS/maintenance/new", requireAuth, async (req, res) => {
   try {
     const [vehicles] = await pool.query("SELECT id, registration_number FROM vehicles WHERE status NOT IN ('In Shop', 'Retired')");
     res.render("maintenance/new.ejs", { vehicles });
@@ -353,7 +405,7 @@ app.get("/TransitOPS/maintenance/new", async (req, res) => {
   }
 });
 
-app.post("/TransitOPS/maintenance", async (req, res) => {
+app.post("/TransitOPS/maintenance", requireAuth, async (req, res) => {
   const { vehicle_id, issue_description } = req.body;
   const connection = await pool.getConnection();
   try {
@@ -375,7 +427,7 @@ app.post("/TransitOPS/maintenance", async (req, res) => {
   }
 });
 
-app.post("/TransitOPS/maintenance/:id/close", async (req, res) => {
+app.post("/TransitOPS/maintenance/:id/close", requireAuth, async (req, res) => {
   const { id } = req.params;
   const { cost, next_vehicle_status } = req.body; 
   const connection = await pool.getConnection();
@@ -456,15 +508,7 @@ app.post("/TransitOPS/expenses", requireAuth, requireRole(['Admin', 'Dispatcher'
     res.status(500).send("Error compiling financial record entry.");
   }
 });
-app.get("/TransitOPS/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/TransitOPS/login");
-  });
-});
 
-// ==========================================
-// 6. SERVER ACTIVATION
-// ==========================================
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });

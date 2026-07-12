@@ -1,0 +1,28 @@
+<% layout('layout/boilerplate') -%>
+<h2 class="mb-3">Ask TransitOps</h2>
+<p class="text-muted">Ask a question in plain English, e.g. "how many trips are available", "how many drivers are free right now", "any vehicles in the shop".</p>
+
+<form action="/TransitOPS/search" method="POST" class="d-flex gap-2 mb-4">
+    <input
+        type="text"
+        name="question"
+        class="form-control"
+        placeholder="Ask something..."
+        value="<%= question || '' %>"
+        required
+    >
+    <button type="submit" class="btn btn-primary">Ask</button>
+</form>
+
+<% if (answer) { %>
+    <div class="card">
+        <div class="card-body">
+            <h6 class="card-subtitle mb-2 text-muted">Answer</h6>
+            <p class="card-text"><%= answer %></p>
+        </div>
+    </div>
+<% } %>
+
+<% if (error) { %>
+    <div class="alert alert-danger mt-3"><%= error %></div>
+<% } %>

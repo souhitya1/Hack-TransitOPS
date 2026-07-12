@@ -10,31 +10,6 @@
             + Provision New Operator
         </a>
     </div>
-
-    <div class="card border-0 shadow-sm mb-4" style="background-color: #f8fafc; border-left: 5px solid #2b579a !important;">
-        <div class="card-body p-4">
-            <h5 class="card-title fw-bold text-dark mb-1 d-flex align-items-center">
-                <span class="me-2">🤖</span> Gemini AI Fleet Search Co-Pilot
-            </h5>
-            <p class="text-muted small mb-3">Ask questions naturally. The AI translates your thought matrix directly into database lookup filters without clicking column headers manually.</p>
-            
-            <div class="input-group mb-2">
-                <input type="text" id="aiSearchInput" class="form-control form-control-lg border-secondary-subtle" 
-                       placeholder="Try typing: 'Who is available right now?' or 'Find drivers with low safety scores'...">
-                <button onclick="runAISearch()" class="btn btn-primary px-4 fw-bold" type="button">
-                    Ask AI
-                </button>
-            </div>
-            <div class="d-flex gap-2 flex-wrap mt-2">
-                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Show me available drivers')">💡 "Show me available drivers"</span>
-                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Find drivers with safety score below 90')">💡 "Safety scores below 90"</span>
-                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Who has an expired license?')">💡 "Expired licenses"</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="aiAlertBox" class="alert d-none mb-3 fw-bold shadow-sm" role="alert"></div>
-
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
