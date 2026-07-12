@@ -1,0 +1,50 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="padding: 20px; font-family: sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Vehicle Registry</h1>
+        <a href="/TransitOPS/vehicles/new" style="background-color: #107c41; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            + Register New Vehicle
+        </a>
+    </div>
+
+    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; text-align: left;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th>Reg Number</th>
+                <th>Model / Type</th>
+                <th>Max Capacity</th>
+                <th>Odometer</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (vehicles.length === 0) { %>
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #777;">No vehicles registered yet. Click the button above to add one.</td>
+                </tr>
+            <% } %>
+            <% for(let vehicle of vehicles) { %>
+                <tr>
+                    <td><strong><%= vehicle.registration_number %></strong></td>
+                    <td><%= vehicle.model_name %> (<%= vehicle.type %>)</td>
+                    <td><%= vehicle.max_load_capacity %> kg</td>
+                    <td><%= vehicle.odometer %> km</td>
+                    <td><%= vehicle.region || 'Unassigned' %></td>
+                    <td>
+                        <span style="padding: 3px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;
+                            background-color: <%= vehicle.status === 'Available' ? '#d4edda' : vehicle.status === 'In Shop' ? '#fff3cd' : '#f8d7da' %>;
+                            color: <%= vehicle.status === 'Available' ? '#155724' : vehicle.status === 'In Shop' ? '#856404' : '#721c24' %>;">
+                            <%= vehicle.status %>
+                        </span>
+                    </td>
+                    <td>
+                        <a href="/TransitOPS/vehicles/<%= vehicle.id %>/edit" style="color: #0066cc; text-decoration: none;">Edit</a>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,72 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="padding: 20px; font-family: sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+            <h1 style="margin: 0;">Maintenance Hub</h1>
+            <p style="color:#666; margin: 5px 0 0 0;">Manage ongoing repairs and vehicle service life stages.</p>
+        </div>
+        <a href="/TransitOPS/maintenance/new" style="background-color: #107c41; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            🔧 Send Vehicle to Shop
+        </a>
+    </div>
+
+    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; text-align: left; border-color: #ddd;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th>Ticket ID</th>
+                <th>Vehicle Profile</th>
+                <th>Reported Mechanical Issues</th>
+                <th>Status</th>
+                <th>Repair Cost / Action Controls</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (records.length === 0) { %>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #777;">No active or past repair files on record.</td>
+                </tr>
+            <% } %>
+            <% for(let record of records) { %>
+                <tr>
+                    <td><strong>#<%= record.id %></strong></td>
+                    <td>
+                        🚛 <strong><%= record.registration_number %></strong><br>
+                        <span style="font-size: 0.85em; color: #666;"><%= record.model_name %></span>
+                    </td>
+                    <td><%= record.issue_description %></td>
+                    <td>
+                        <span style="padding: 4px 8px; border-radius: 4px; font-size: 0.85em; font-weight: bold;
+                            background-color: <%= record.status === 'Under Repair' ? '#fff3cd' : '#d4edda' %>;
+                            color: <%= record.status === 'Under Repair' ? '#856404' : '#155724' %>;">
+                            <%= record.status %>
+                        </span>
+                    </td>
+                    <td>
+                        <% if (record.status === 'Under Repair') { %>
+                            <form action="/TransitOPS/maintenance/<%= record.id %>/close" method="POST" style="background: #fafafa; border: 1px solid #ccc; padding: 10px; border-radius: 4px; display: inline-block;">
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 2px;">Total Cost ($):</label>
+                                    <input type="number" step="0.01" name="cost" placeholder="0.00" min="0" required style="padding: 4px; font-size: 0.85em; width: 120px;">
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 2px;">Post-Shop Status:</label>
+                                    <select name="next_vehicle_status" style="padding: 4px; font-size: 0.85em; width: 100%;">
+                                        <option value="Available">Available (Return to Service Pool)</option>
+                                        <option value="Retired">Retired (Decommission Asset)</option>
+                                    </select>
+                               </div>
+                                <button type="submit" style="background-color: #28a745; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; font-weight: bold; width: 100%;">Complete Repair</button>
+                            </form>
+                        <% } else { %>
+                            <span style="color: #28a745; font-weight: bold;">$<%= parseFloat(record.cost).toFixed(2) %></span><br>
+                            <span style="font-size: 0.8em; color: #777; font-style: italic;">
+                                Solved on <%= new Date(record.resolved_at).toLocaleDateString() %>
+                            </span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,35 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="max-width: 400px; margin: 60px auto; font-family: sans-serif; padding: 25px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <h2 style="color: #2b579a; margin-top: 0;">Register Operational Profile</h2>
+    <p style="color: #666; font-size: 0.9em;">Provision credentials to enter the transit management platform matrix.</p>
+
+    <% if (error) { %>
+        <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem;">
+            ⚠️ <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/TransitOPS/signup" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Network Email:</label>
+            <input type="email" name="email" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Access Key Password:</label>
+            <input type="password" name="password" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Assigned Authority Role:</label>
+            <select name="role" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="Dispatcher">Dispatcher (Route Management)</option>
+                <option value="Admin">Admin (Full Fleet Permissions)</option>
+                <option value="Driver">Driver (Read-Only Matrix)</option>
+            </select>
+        </div>
+        <button type="submit" style="background-color: #107c41; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 5px;">
+            Provision Profile Account
+        </button>
+    </form>
+    <p style="text-align: center; font-size: 0.85em; margin-top: 15px; color: #555;">Already have an operational account? <a href="/TransitOPS/login" style="color: #2b579a; text-decoration: none; font-weight: bold;">Login here</a></p>
+</div>

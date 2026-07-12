@@ -1,0 +1,74 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="padding: 20px; font-family: sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h1 style="margin: 0;">Fleet Financial Hub</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">Total aggregated running costs parsed by individual fleet assets.</p>
+        </div>
+        <a href="/TransitOPS/expenses/new" style="background-color: #107c41; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+            + Log New Expense / Fuel
+        </a>
+    </div>
+
+    <h3 style="color: #2b579a; border-bottom: 2px solid #2b579a; padding-bottom: 5px;">Cost Breakdown Summary Per Vehicle</h3>
+    <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; text-align: left; border-color: #ddd; margin-bottom: 40px;">
+        <thead style="background-color: #f2f2f2;">
+            <tr>
+                <th>Vehicle Profile</th>
+                <th>⛽ Fuel Total</th>
+                <th>🔧 Maintenance Total</th>
+                <th>📦 Other Fees</th>
+                <th style="background-color: #e2f0d9;">💰 Total Running Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let row of summary) { %>
+                <tr>
+                    <td><strong><%= row.registration_number %></strong> <span style="font-size: 0.85em; color: #555;">( <%= row.model_name %> )</span></td>
+                    <td style="color: #b25900; font-weight: bold;">$<%= parseFloat(row.fuel_cost).toFixed(2) %></td>
+                    <td style="color: #2b579a;">$<%= parseFloat(row.maintenance_cost).toFixed(2) %></td>
+                    <td style="color: #666;">$<%= parseFloat(row.other_costs).toFixed(2) %></td>
+                    <td style="background-color: #f4f9f1; font-weight: bold; font-size: 1.1em; color: #107c41;">
+                        $<%= parseFloat(row.total_cost).toFixed(2) %>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <h3 style="color: #555;">Recent Financial Ledger Transactions</h3>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%; text-align: left; border-color: #ddd; font-size: 0.95em;">
+        <thead style="background-color: #fafafa; color: #555;">
+            <tr>
+                <th>Date</th>
+                <th>Vehicle</th>
+                <th>Category</th>
+                <th>Notes / Memo</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if(logs.length === 0) { %>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #999;">No expense allocations recorded yet.</td>
+                </tr>
+            <% } %>
+            <% for(let item of logs) { %>
+                <tr>
+                    <td><%= new Date(item.date).toLocaleDateString('en-US', {timeZone: 'UTC'}) %></td>
+                    <td><strong><%= item.registration_number %></strong></td>
+                    <td>
+                        <span style="padding: 2px 6px; border-radius: 4px; font-size: 0.85em; font-weight: bold;
+                            background-color: <%= item.type === 'Fuel' ? '#ffe8cc' : item.type === 'Maintenance' ? '#d0e1fd' : '#e2e2e2' %>;
+                            color: <%= item.type === 'Fuel' ? '#b25900' : item.type === 'Maintenance' ? '#1c3d73' : '#333' %>;">
+                            <%= item.type %>
+                        </span>
+                    </td>
+                    <td style="color: #555;"><%= item.description || '—' %></td>
+                    <td style="font-weight: bold; color: #dc3545;">-$<%= parseFloat(item.amount).toFixed(2) %></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

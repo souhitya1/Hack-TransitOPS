@@ -1,0 +1,27 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="max-width: 400px; margin: 60px auto; font-family: sans-serif; padding: 25px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <h2 style="color: #2b579a; margin-top: 0;">TransitOPS Control Center Login</h2>
+    <p style="color: #666; font-size: 0.9em;">Input security credentials to authorize access.</p>
+
+    <% if (error) { %>
+        <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem;">
+            🔒 <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/TransitOPS/login" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Account Email Address:</label>
+            <input type="email" name="email" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Security Password:</label>
+            <input type="password" name="password" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <button type="submit" style="background-color: #2b579a; color: white; padding: 10px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 5px;">
+            Authenticate Access
+        </button>
+    </form>
+    <p style="text-align: center; font-size: 0.85em; margin-top: 15px; color: #555;">New system employee? <a href="/TransitOPS/signup" style="color: #107c41; text-decoration: none; font-weight: bold;">Create an account</a></p>
+</div>

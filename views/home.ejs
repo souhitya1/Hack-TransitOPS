@@ -1,0 +1,88 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="padding: 20px; font-family: sans-serif; max-width: 1200px; margin: 0 auto;">
+    
+    <div style="margin-bottom: 30px;">
+        <h1 style="color: #2b579a; margin-bottom: 5px;">TransitOps Fleet Hub</h1>
+        <p style="color: #666; margin-top: 0;">Real-time asset telemetry and logistical command deck.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px;">
+        
+        <div style="background: #eef4fc; border-left: 5px solid #2b579a; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin: 0; color: #555; font-size: 0.9rem; text-transform: uppercase;">Available Vehicles</h3>
+            <p style="font-size: 2.5rem; font-weight: bold; margin: 10px 0 0 0; color: #2b579a;"><%= metrics.availableVehicles %></p>
+            <a href="/TransitOPS/vehicles/new" style="color: #2b579a; font-size: 0.85rem; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px;">+ Register Asset</a>
+        </div>
+
+        <div style="background: #eafaf1; border-left: 5px solid #107c41; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin: 0; color: #555; font-size: 0.9rem; text-transform: uppercase;">Ready Operators</h3>
+            <p style="font-size: 2.5rem; font-weight: bold; margin: 10px 0 0 0; color: #107c41;"><%= metrics.availableDrivers %></p>
+            <a href="/TransitOPS/drivers" style="color: #107c41; font-size: 0.85rem; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px;">View Directory →</a>
+        </div>
+
+        <div style="background: #fffbeb; border-left: 5px solid #d97706; padding: 20px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <h3 style="margin: 0; color: #555; font-size: 0.9rem; text-transform: uppercase;">En Route Matrix</h3>
+            <p style="font-size: 2.5rem; font-weight: bold; margin: 10px 0 0 0; color: #d97706;"><%= metrics.activeTrips %></p>
+            <a href="/TransitOPS/trips/new" style="color: #d97706; font-size: 0.85rem; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px;">⚡ Deploy Dispatch</a>
+        </div>
+
+    </div>
+
+    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+        
+        <div style="flex: 2; min-width: 600px;">
+            <h2 style="color: #333; margin-bottom: 15px; font-size: 1.3rem;">Recent Fleet Registry Assets</h2>
+            <table border="1" cellpadding="10" style="border-collapse: collapse; width: 100%; text-align: left; border-color: #ddd;">
+                <thead style="background-color: #f8f9fa;">
+                    <tr>
+                        <th>Reg Number</th>
+                        <th>Model / Class</th>
+                        <th>Capacity</th>
+                        <th>Status</th>
+                        <th>Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (vehicles.length === 0) { %>
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #777;">No vehicles registered in the matrix yet.</td>
+                        </tr>
+                    <% } %>
+                    <% for(let vehicle of vehicles) { %>
+                        <tr>
+                            <td><strong><%= vehicle.registration_number %></strong></td>
+                            <td><%= vehicle.model_name %> (<%= vehicle.type %>)</td>
+                            <td><%= vehicle.max_load_capacity %> kg</td>
+                            <td>
+                                <span style="padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-weight: bold;
+                                    background-color: <%= vehicle.status === 'Available' ? '#d4edda' : vehicle.status === 'On Trip' ? '#cee4ff' : '#fff3cd' %>;
+                                    color: <%= vehicle.status === 'Available' ? '#155724' : vehicle.status === 'On Trip' ? '#004085' : '#856404' %>;">
+                                    <%= vehicle.status %>
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/TransitOPS/vehicles/<%= vehicle.id %>/edit" style="color: #2b579a; font-size: 0.9rem; text-decoration: none;">Manage</a>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="flex: 1; min-width: 300px; background: #fafafa; border: 1px solid #e0e0e0; padding: 20px; border-radius: 4px;">
+            <h2 style="color: #333; margin-top: 0; font-size: 1.2rem; margin-bottom: 15px;">System Directory Links</h2>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Direct shortcuts to deep registry management platforms:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="/TransitOPS/trips" style="background: #2b579a; color: white; text-align: center; padding: 12px; text-decoration: none; border-radius: 4px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    Open Trips Control Deck
+                </a>
+                <a href="/TransitOPS/drivers" style="background: #107c41; color: white; text-align: center; padding: 12px; text-decoration: none; border-radius: 4px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    Open Drivers Registry
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>

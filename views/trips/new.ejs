@@ -1,0 +1,64 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="max-width: 600px; margin: 30px auto; font-family: sans-serif;">
+    <h2 style="color: #2b579a;"> Deploy Logistical Trip</h2>
+    <p style="color: #666;">Schedule freight routes with automated rule verification.</p>
+
+    <% if (error) { %>
+        <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-weight: bold;">
+            🚨 Dispatch Rejection Rule Triggered:<br> 
+            <span style="font-weight: normal; font-size: 0.95rem;"><%= error %></span>
+        </div>
+    <% } %>
+
+    <form action="/TransitOPS/trips" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Source Origin:</label>
+                <input type="text" name="source" placeholder="e.g., Chicago Hub" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Destination Hub:</label>
+                <input type="text" name="destination" placeholder="e.g., Dallas Port" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Cargo Total Weight (kg):</label>
+                <input type="number" step="0.01" name="cargo_weight" placeholder="e.g., 5000" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Planned Distance (km):</label>
+                <input type="number" step="0.01" name="planned_distance" placeholder="e.g., 450" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+        </div>
+
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Select Fleet Vehicle (Only Available options listed):</label>
+            <select name="vehicle_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">-- Choose Available Vehicle --</option>
+                <% for(let vehicle of vehicles) { %>
+                    <option value="<%= vehicle.id %>"><%= vehicle.registration_number %> (Max Capacity: <%= vehicle.max_load_capacity %> kg)</option>
+                <% } %>
+            </select>
+        </div>
+
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Assign Fleet Operator (Only Active & Licensed options listed):</label>
+            <select name="driver_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">-- Choose Free Driver --</option>
+                <% for(let driver of drivers) { %>
+                    <option value="<%= driver.id %>"><%= driver.name %></option>
+                <% } %>
+            </select>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button type="submit" style="background-color: #2b579a; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Verify & Dispatch Trip
+            </button>
+            <a href="/TransitOPS/trips" style="margin-left: 15px; color: #555; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>

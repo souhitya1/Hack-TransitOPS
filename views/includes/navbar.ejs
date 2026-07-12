@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+    <a class="navbar-brand" href="/TransitOPS">TransitOps</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+            <% if (user) { %>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS/vehicles">Vehicles</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS/drivers">Drivers</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS/trips">Trips</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS/maintenance">Maintenance</a>
+                </li>
+                
+                <% if (user.role === 'Admin' || user.role === 'Dispatcher') { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/TransitOPS/expenses">Fuel & Expenses</a>
+                    </li>
+                <% } %>
+                <li class="nav-item ms-lg-3">
+                    <span class="badge bg-secondary me-2">
+                        <%= user.email %> (<%= user.role %>)
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-sm btn-outline-danger" href="/TransitOPS/logout">Logout</a>
+                </li>
+
+            <% } else { %>
+                <li class="nav-item">
+                    <a class="nav-link" href="/TransitOPS/login">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-sm btn-success ms-lg-2" href="/TransitOPS/signup">Sign Up</a>
+                </li>
+            <% } %>
+        </ul>
+    </div>
+</nav>

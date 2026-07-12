@@ -1,0 +1,165 @@
+<% layout('layout/boilerplate') -%>
+
+<div class="container my-4" style="font-family: sans-serif;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 text-dark m-0">Driver Registry Management</h1>
+            <p class="text-muted m-0">Track credential milestones, active assignments, and operations.</p>
+        </div>
+        <a href="/TransitOPS/drivers/new" class="btn btn-primary fw-bold">
+            + Provision New Operator
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4" style="background-color: #f8fafc; border-left: 5px solid #2b579a !important;">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold text-dark mb-1 d-flex align-items-center">
+                <span class="me-2">🤖</span> Gemini AI Fleet Search Co-Pilot
+            </h5>
+            <p class="text-muted small mb-3">Ask questions naturally. The AI translates your thought matrix directly into database lookup filters without clicking column headers manually.</p>
+            
+            <div class="input-group mb-2">
+                <input type="text" id="aiSearchInput" class="form-control form-control-lg border-secondary-subtle" 
+                       placeholder="Try typing: 'Who is available right now?' or 'Find drivers with low safety scores'...">
+                <button onclick="runAISearch()" class="btn btn-primary px-4 fw-bold" type="button">
+                    Ask AI
+                </button>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mt-2">
+                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Show me available drivers')">💡 "Show me available drivers"</span>
+                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Find drivers with safety score below 90')">💡 "Safety scores below 90"</span>
+                <span class="badge text-secondary bg-light border cursor-pointer" style="cursor:pointer;" onclick="setSample('Who has an expired license?')">💡 "Expired licenses"</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="aiAlertBox" class="alert d-none mb-3 fw-bold shadow-sm" role="alert"></div>
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase fs-7 text-secondary">
+                    <tr>
+                        <th class="px-4">Operator Name</th>
+                        <th>License Number</th>
+                        <th>Category</th>
+                        <th>Expiration Date</th>
+                        <th>Contact Number</th>
+                        <th>Safety Score</th>
+                        <th class="px-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(drivers.length === 0) { %>
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No operational driver profiles logged in database registry.</td>
+                        </tr>
+                    <% } %>
+                    <% for(let driver of drivers) { %>
+                        <tr>
+                            <td class="px-4">
+                                <div class="fw-bold text-dark"><%= driver.name %></div>
+                            </td>
+                            <td><code class="text-secondary"><%= driver.license_number %></code></td>
+                            <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5"><%= driver.license_category %></span></td>
+                            <td>
+                                <% 
+                                    let exp = new Date(driver.license_expiry_date);
+                                    let isExpired = exp < new Date(today);
+                                %>
+                                <span class="<%= isExpired ? 'text-danger fw-bold' : '' %>">
+                                    <%= exp.toLocaleDateString('en-US', {timeZone: 'UTC'}) %>
+                                    <%= isExpired ? ' ⚠️' : '' %>
+                                </span>
+                            </td>
+                            <td><%= driver.contact_number || '—' %></td>
+                            <td class="fw-bold <%= driver.safety_score < 85 ? 'text-danger' : 'text-success' %>">
+                                <%= parseFloat(driver.safety_score).toFixed(2) %>
+                            </td>
+                            <td class="px-4">
+                                <span class="badge <%= driver.status === 'Available' ? 'bg-success' : driver.status === 'On Trip' ? 'bg-warning text-dark' : 'bg-danger' %> px-3 py-2 fs-8 rounded-pill">
+                                    <%= driver.status %>
+                                </span>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Quick helper to fill search ideas automatically when clicked
+function setSample(text) {
+    document.getElementById("aiSearchInput").value = text;
+    runAISearch();
+}
+
+async function runAISearch() {
+    const query = document.getElementById("aiSearchInput").value.trim();
+    if (!query) return;
+
+    const alertBox = document.getElementById("aiAlertBox");
+    alertBox.className = "alert alert-info d-block fw-bold shadow-sm animate-pulse";
+    alertBox.innerText = `🔄 Gemini AI is parsing intent matrix for: "${query}"...`;
+
+    try {
+        const response = await fetch(`/TransitOPS/drivers/ai-search?q=${encodeURIComponent(query)}`);
+        const drivers = await response.json();
+        
+        const tbody = document.querySelector("table tbody");
+        tbody.innerHTML = ""; // Wipe standard listings out
+
+        if (drivers.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fs-5">🕵️‍♂️ Gemini lookup returned 0 matching operator logs.</td></tr>`;
+            alertBox.className = "alert alert-danger d-block fw-bold shadow-sm";
+            alertBox.innerText = `❌ No drivers matching that query description were found in the fleet registry database.`;
+            return;
+        }
+
+        alertBox.className = "alert alert-success d-block fw-bold shadow-sm";
+        alertBox.innerText = `✅ Gemini fetched and optimized ${drivers.length} results cleanly!`;
+
+        // Map arrays to dynamic DOM injections
+        drivers.forEach(driver => {
+            const expiryDate = new Date(driver.license_expiry_date).toLocaleDateString('en-US', {timeZone: 'UTC'});
+            const todayStr = new Date().toISOString().split('T')[0];
+            const isExpired = new Date(driver.license_expiry_date) < new Date(todayStr);
+
+            const statusClass = driver.status === 'Available' ? 'bg-success' : driver.status === 'On Trip' ? 'bg-warning text-dark' : 'bg-danger';
+            const safetyClass = driver.safety_score < 85 ? 'text-danger' : 'text-success';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td class="px-4"><div class="fw-bold text-dark">${driver.name}</div></td>
+                    <td><code class="text-secondary">${driver.license_number}</code></td>
+                    <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2.5">${driver.license_category}</span></td>
+                    <td>
+                        <span class="${isExpired ? 'text-danger fw-bold' : ''}">
+                            ${expiryDate} ${isExpired ? ' ⚠️' : ''}
+                        </span>
+                    </td>
+                    <td>${driver.contact_number || '—'}</td>
+                    <td class="fw-bold ${safetyClass}">${parseFloat(driver.safety_score).toFixed(2)}</td>
+                    <td class="px-4">
+                        <span class="badge ${statusClass} px-3 py-2 fs-8 rounded-pill">${driver.status}</span>
+                    </td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        alertBox.className = "alert alert-danger d-block fw-bold shadow-sm";
+        alertBox.innerText = "💥 Critical Exception: Failed to interface with the backend Gemini API route.";
+    }
+}
+
+// Bind physical hit entry key
+document.getElementById("aiSearchInput").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        runAISearch();
+    }
+});
+</script>

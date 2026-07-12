@@ -1,0 +1,30 @@
+<% layout('layout/boilerplate') -%>
+
+<div style="max-width: 500px; margin: 30px auto; font-family: sans-serif;">
+    <h2 style="color: #2b579a;">Send Vehicle to Shop</h2>
+    <p style="color: #666;">Create an active maintenance record to temporarily flag the vehicle out of rotation.</p>
+
+    <form action="/TransitOPS/maintenance" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Select Target Vehicle:</label>
+            <select name="vehicle_id" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">-- Choose Eligible Vehicle --</option>
+                <% for(let vehicle of vehicles) { %>
+                    <option value="<%= vehicle.id %>"><%= vehicle.registration_number %></option>
+                <% } %>
+            </select>
+        </div>
+
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Issue / Repair Description:</label>
+            <textarea name="issue_description" rows="4" placeholder="Describe mechanical fault or scheduled service..." required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <button type="submit" style="background-color: #2b579a; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Log & Send to Shop
+            </button>
+            <a href="/TransitOPS/maintenance" style="margin-left: 15px; color: #555; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>

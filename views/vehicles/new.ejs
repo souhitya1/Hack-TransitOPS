@@ -1,0 +1,69 @@
+<% layout("layout/boilerplate") -%>
+<div style="max-width: 600px; margin: 30px auto; font-family: sans-serif;">
+    <h2> Register Fleet Vehicle</h2>
+    <p>Add a new tracking profile to the TransitOps fleet matrix.</p>
+
+    <% if (error) { %>
+        <div style="color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+            <strong>Database Constraint Error:</strong> <%= error %>
+        </div>
+    <% } %>
+
+    <form action="/TransitOPS/vehicles" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+        
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Registration / Plate Number (Unique):</label>
+            <input type="text" name="registration_number" placeholder="e.g., TRK-2026-X" required style="width: 100%; padding: 8px;">
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Model Name:</label>
+                <input type="text" name="model_name" placeholder="e.g., Volvo FH16" required style="width: 100%; padding: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Type:</label>
+                <input type="text" name="type" placeholder="e.g., Semi-Truck, Van" required style="width: 100%; padding: 8px;">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Max Load Capacity (kg):</label>
+                <input type="number" step="0.01" name="max_load_capacity" placeholder="e.g., 15000.00" required style="width: 100%; padding: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Current Odometer (km):</label>
+                <input type="number" step="0.01" name="odometer" value="0.00" style="width: 100%; padding: 8px;">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Acquisition Cost ($):</label>
+                <input type="number" step="0.01" name="acquisition_cost" value="0.00" style="width: 100%; padding: 8px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Assigned Operational Region:</label>
+                <input type="text" name="region" placeholder="e.g., Northeast Hub" style="width: 100%; padding: 8px;">
+            </div>
+        </div>
+
+        <div>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Initial Status:</label>
+            <select name="status" style="width: 100%; padding: 8px;">
+                <option value="Available">Available</option>
+                <option value="On Trip">On Trip</option>
+                <option value="In Shop">In Shop</option>
+                <option value="Retired">Retired</option>
+            </select>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button type="submit" style="background-color: #2b579a; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                Save to Registry
+            </button>
+            <a href="/vehicles" style="margin-left: 15px; color: #555; text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>
