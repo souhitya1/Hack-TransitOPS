@@ -110,7 +110,7 @@ Visit `http://localhost:8080`.
 
 Users · Vehicles · Drivers · Trips · Maintenance Logs · Fuel Logs · Expenses
 
-## Roadmap / Not Yet Implemented
+## Roadmap
 
 - Authentication with role-based access control
 - Full CRUD screens for Trips, Maintenance, Fuel & Expenses, Reports
